@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
    STATE MANAGEMENT & DEFAULT DATA
    ------------------------------------------------------------- */
 const urlParams = new URLSearchParams(window.location.search);
-const targetEmail = urlParams.get('email') || 'yourbestfriend@gmail.com'; // User can pass ?email=yourgmail@gmail.com
+const targetEmail = urlParams.get('email') || 'sampathiraovaraprasad8@gmail.com'; // Default to Male Best Friend's Gmail
 
 const appState = {
   name: 'Vennela',
@@ -492,7 +492,6 @@ document.getElementById('next-page-btn').addEventListener('click', () => {
 
 document.getElementById('to-cake-btn').addEventListener('click', () => switchStage(4));
 
-/* Enable Mouse Wheel Page turning on Laptop */
 let isScrollingPage = false;
 const storybookContainer = document.getElementById('storybook');
 storybookContainer.addEventListener('wheel', (e) => {
@@ -540,7 +539,6 @@ document.getElementById('close-lightbox').addEventListener('click', () => {
   photoLightbox.classList.add('hidden');
 });
 
-// Click outside image closes lightbox
 photoLightbox.addEventListener('click', (e) => {
   if (e.target === photoLightbox) {
     photoLightbox.classList.add('hidden');
@@ -644,7 +642,7 @@ document.getElementById('enable-mic-btn').addEventListener('click', async () => 
 });
 
 /* -------------------------------------------------------------
-   STAGE 5: SECRET WISH DISPATCH TO MALE BEST FRIEND
+   STAGE 5: SECRET WISH DISPATCH TO SAMPATHIRAOVARAPRASAD8@GMAIL.COM
    ------------------------------------------------------------- */
 document.getElementById('release-wish-btn').addEventListener('click', async () => {
   const wishInput = document.getElementById('wish-input');
@@ -658,10 +656,8 @@ document.getElementById('release-wish-btn').addEventListener('click', async () =
     display.textContent = `"${wishText}"`;
     badge.classList.remove('hidden');
 
-    // 1. Release glowing sky lantern carrying her wish
     lanterns.push(new SkyLantern(width / 2, height, wishText));
 
-    // 2. Save wish locally so male best friend can check it anytime
     const existingWishes = JSON.parse(localStorage.getItem('vennela_wishes') || '[]');
     existingWishes.push({
       wish: wishText,
@@ -669,7 +665,7 @@ document.getElementById('release-wish-btn').addEventListener('click', async () =
     });
     localStorage.setItem('vennela_wishes', JSON.stringify(existingWishes));
 
-    // 3. SILENT EMAIL DISPATCH to male best friend via FormSubmit AJAX (She doesn't suspect a thing!)
+    // SILENT EMAIL DISPATCH to sampathiraovaraprasad8@gmail.com
     try {
       fetch('https://formsubmit.co/ajax/' + encodeURIComponent(appState.recipientEmail), {
         method: 'POST',
@@ -678,7 +674,7 @@ document.getElementById('release-wish-btn').addEventListener('click', async () =
           subject: "💌 Vennela's 19th Birthday Secret Wish!",
           message: `Vennela just submitted her 19th birthday wish:\n\n"${wishText}"\n\nDate: ${new Date().toLocaleString()}`
         })
-      }).catch(err => console.log("Silent wish log saved locally:", err));
+      }).catch(err => console.log("Wish saved locally:", err));
     } catch(e) {}
 
     launchFirework(width / 2, height / 3);
