@@ -279,6 +279,80 @@ class SkyLantern {
   }
 }
 
+class CuteEmoji {
+  constructor(x, y) {
+    this.emojis = ['🧸', '🌸', '🎀', '✨', '💖', '🐱', '👑', '🧁', '🎈', '💫', '🍓', '🍧', '🦄', '🦋', '🌙', '🐰', '🍩', '🌷'];
+    this.reset(x, y);
+  }
+
+  reset(x, y) {
+    this.x = x !== undefined ? x : Math.random() * width;
+    this.y = y !== undefined ? y : height + Math.random() * 100;
+    this.emoji = this.emojis[Math.floor(Math.random() * this.emojis.length)];
+    this.size = Math.random() * 14 + 24;
+    this.vy = -Math.random() * 0.8 - 0.4;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.swaySpeed = Math.random() * 0.03 + 0.01;
+    this.swayAmplitude = Math.random() * 1.8 + 0.6;
+    this.angle = Math.random() * Math.PI * 2;
+    this.rotation = (Math.random() - 0.5) * 0.3;
+    this.rotSpeed = (Math.random() - 0.5) * 0.02;
+    this.alpha = Math.random() * 0.4 + 0.6;
+    this.pulse = Math.random() * Math.PI * 2;
+  }
+
+  update() {
+    this.angle += this.swaySpeed;
+    this.x += Math.sin(this.angle) * this.swayAmplitude * 0.4 + this.vx;
+    this.y += this.vy;
+    this.rotation += this.rotSpeed;
+    this.pulse += 0.04;
+
+    if (this.y < -60) {
+      this.reset();
+    }
+  }
+
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
+    
+    const currentScale = 1 + Math.sin(this.pulse) * 0.1;
+    ctx.scale(currentScale, currentScale);
+
+    ctx.font = `${this.size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = 'rgba(255, 105, 180, 0.7)';
+
+    ctx.fillText(this.emoji, 0, 0);
+    ctx.restore();
+  }
+
+  isClicked(cx, cy) {
+    const dx = this.x - cx;
+    const dy = this.y - cy;
+    return Math.sqrt(dx * dx + dy * dy) < (this.size + 12);
+  }
+}
+
+let cuteEmojis = [];
+for (let i = 0; i < 28; i++) {
+  cuteEmojis.push(new CuteEmoji(Math.random() * width, Math.random() * height));
+}
+
+function spawnExtraCuties(count = 15) {
+  playSoundEffect('chime');
+  confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
+  for (let i = 0; i < count; i++) {
+    cuteEmojis.push(new CuteEmoji(Math.random() * width, height + Math.random() * 60));
+  }
+}
+
 for (let i = 0; i < 90; i++) {
   particles.push(new Particle());
 }
@@ -293,7 +367,24 @@ function launchFirework(x, y) {
 }
 
 canvas.addEventListener('click', (e) => {
-  launchFirework(e.clientX, e.clientY);
+  let hitEmoji = false;
+  for (let i = cuteEmojis.length - 1; i >= 0; i--) {
+    if (cuteEmojis[i].isClicked(e.clientX, e.clientY)) {
+      hitEmoji = true;
+      playSoundEffect('pop');
+      confetti({
+        particleCount: 16,
+        spread: 45,
+        origin: { x: e.clientX / width, y: e.clientY / height },
+        colors: ['#ff65a3', '#ffd700', '#f7a8b8', '#a855f7']
+      });
+      cuteEmojis[i].reset(e.clientX, e.clientY);
+      break;
+    }
+  }
+  if (!hitEmoji) {
+    launchFirework(e.clientX, e.clientY);
+  }
 });
 
 function animateCanvas() {
@@ -303,6 +394,11 @@ function animateCanvas() {
   particles.forEach(p => {
     p.update();
     p.draw();
+  });
+
+  cuteEmojis.forEach(c => {
+    c.update();
+    c.draw();
   });
 
   lanterns.forEach(l => {
@@ -397,45 +493,111 @@ giftBoxTrigger.addEventListener('click', () => {
 document.getElementById('unlock-now-btn').addEventListener('click', () => switchStage(2));
 
 /* -------------------------------------------------------------
-   STAGE 2: GOLDEN KEY & HEART LOCK
+   STAGE 2: GOLDEN KEY & HEART LOCK (TOUCH + CLICK + DRAG FIX)
    ------------------------------------------------------------- */
 const autoKeyBtn = document.getElementById('auto-key-btn');
 const heartLock = document.getElementById('heart-lock');
+const keyDraggable = document.getElementById('key-draggable');
 
-autoKeyBtn.addEventListener('click', unlockLockMechanism);
+let isUnlocked = false;
 
 function unlockLockMechanism() {
+  if (isUnlocked) return;
+  isUnlocked = true;
+
   playSoundEffect('unlock');
-  heartLock.classList.add('unlocked');
-  confetti({ particleCount: 90, spread: 80, origin: { y: 0.5 } });
+  
+  // Smoothly insert golden key into keyhole
+  keyDraggable.style.transition = 'all 0.5s ease-in-out';
+  const lockRect = heartLock.getBoundingClientRect();
+  const container = document.querySelector('.lock-mechanism-container');
+  const containerRect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
+  
+  keyDraggable.style.position = 'absolute';
+  keyDraggable.style.left = `${lockRect.left - containerRect.left + 35}px`;
+  keyDraggable.style.top = `${lockRect.top - containerRect.top + 30}px`;
+  keyDraggable.style.transform = 'rotate(90deg) scale(0.95)';
+
+  setTimeout(() => {
+    heartLock.classList.add('unlocked');
+    confetti({ particleCount: 90, spread: 80, origin: { y: 0.5 } });
+  }, 400);
 
   setTimeout(() => {
     switchStage(3);
-  }, 900);
+  }, 1100);
 }
 
-const keyDraggable = document.getElementById('key-draggable');
+autoKeyBtn.addEventListener('click', unlockLockMechanism);
+heartLock.addEventListener('click', unlockLockMechanism);
+keyDraggable.addEventListener('click', unlockLockMechanism);
+
 let isDraggingKey = false;
 
-keyDraggable.addEventListener('mousedown', () => isDraggingKey = true);
-window.addEventListener('mouseup', () => isDraggingKey = false);
-window.addEventListener('mousemove', (e) => {
-  if (!isDraggingKey) return;
+function handleDragStart(e) {
+  if (isUnlocked) return;
+  isDraggingKey = true;
+  keyDraggable.style.transition = 'none';
+}
+
+function handleDragMove(e) {
+  if (!isDraggingKey || isUnlocked) return;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
   keyDraggable.style.position = 'fixed';
-  keyDraggable.style.left = `${e.clientX - 30}px`;
-  keyDraggable.style.top = `${e.clientY - 20}px`;
+  keyDraggable.style.left = `${clientX - 30}px`;
+  keyDraggable.style.top = `${clientY - 25}px`;
 
   const lockRect = heartLock.getBoundingClientRect();
   if (
-    e.clientX >= lockRect.left &&
-    e.clientX <= lockRect.right &&
-    e.clientY >= lockRect.top &&
-    e.clientY <= lockRect.bottom
+    clientX >= lockRect.left - 40 &&
+    clientX <= lockRect.right + 40 &&
+    clientY >= lockRect.top - 40 &&
+    clientY <= lockRect.bottom + 40
   ) {
     isDraggingKey = false;
     unlockLockMechanism();
   }
-});
+}
+
+function handleDragEnd() {
+  if (!isDraggingKey) return;
+  isDraggingKey = false;
+  if (isUnlocked) return;
+
+  const keyRect = keyDraggable.getBoundingClientRect();
+  const lockRect = heartLock.getBoundingClientRect();
+
+  const dist = Math.hypot(
+    (keyRect.left + keyRect.width / 2) - (lockRect.left + lockRect.width / 2),
+    (keyRect.top + keyRect.height / 2) - (lockRect.top + lockRect.height / 2)
+  );
+
+  if (dist < 180) {
+    unlockLockMechanism();
+  } else {
+    // Snap key back
+    keyDraggable.style.transition = 'all 0.4s ease';
+    keyDraggable.style.position = 'absolute';
+    keyDraggable.style.left = '';
+    keyDraggable.style.top = '';
+    keyDraggable.style.right = '0';
+    keyDraggable.style.bottom = '20px';
+  }
+}
+
+keyDraggable.addEventListener('mousedown', handleDragStart);
+window.addEventListener('mousemove', handleDragMove);
+window.addEventListener('mouseup', handleDragEnd);
+
+keyDraggable.addEventListener('touchstart', handleDragStart, { passive: true });
+window.addEventListener('touchmove', (e) => {
+  if (isDraggingKey) {
+    handleDragMove(e);
+  }
+}, { passive: true });
+window.addEventListener('touchend', handleDragEnd);
 
 /* -------------------------------------------------------------
    STAGE 3: 3D STORYBOOK ENGINE & LAPTOP SCROLLING
@@ -656,33 +818,84 @@ document.getElementById('release-wish-btn').addEventListener('click', async () =
     display.textContent = `"${wishText}"`;
     badge.classList.remove('hidden');
 
+    // Float sky lantern with her wish
     lanterns.push(new SkyLantern(width / 2, height, wishText));
 
+    // 1. Save wish locally in browser localStorage (secret backup)
     const existingWishes = JSON.parse(localStorage.getItem('vennela_wishes') || '[]');
-    existingWishes.push({
+    const wishEntry = {
       wish: wishText,
-      timestamp: new Date().toLocaleString()
-    });
+      timestamp: new Date().toLocaleString(),
+      user: 'Vennela'
+    };
+    existingWishes.push(wishEntry);
     localStorage.setItem('vennela_wishes', JSON.stringify(existingWishes));
 
-    // SILENT EMAIL DISPATCH to sampathiraovaraprasad8@gmail.com
+    // 2. SILENT EMAIL DISPATCH to sampathiraovaraprasad8@gmail.com
+    // Vennela will NEVER see this email or any notification about it!
+    const formToken = '61e91c10583776426466ec005d2f5870'; // Direct FormSubmit token for sampathiraovaraprasad8@gmail.com
+    const targetEmail = 'sampathiraovaraprasad8@gmail.com';
+    
     try {
-      fetch('https://formsubmit.co/ajax/' + encodeURIComponent(appState.recipientEmail), {
+      // Primary dispatch via FormSubmit token (No activation required!)
+      fetch(`https://formsubmit.co/ajax/${formToken}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
-          subject: "💌 Vennela's 19th Birthday Secret Wish!",
-          message: `Vennela just submitted her 19th birthday wish:\n\n"${wishText}"\n\nDate: ${new Date().toLocaleString()}`
+          _subject: "💌 Vennela's 19th Birthday Secret Wish!",
+          name: "Vennela Birthday Magic App",
+          message: `🎉 VENNELA JUST MADE A 19TH BIRTHDAY WISH:\n\n"${wishText}"\n\nDate & Time: ${new Date().toLocaleString()}\n\n(Keep this a secret as requested! 🤫)`
         })
-      }).catch(err => console.log("Wish saved locally:", err));
+      }).catch(() => {});
+
+      // Backup dispatch directly to email address
+      fetch('https://formsubmit.co/ajax/' + encodeURIComponent(targetEmail), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject: "💌 Vennela's 19th Birthday Secret Wish!",
+          message: `🎉 VENNELA'S WISH:\n\n"${wishText}"\n\nDate: ${new Date().toLocaleString()}`
+        })
+      }).catch(() => {});
+
+      if (navigator.sendBeacon) {
+        const formData = new FormData();
+        formData.append('_subject', "💌 Vennela Secret Wish");
+        formData.append('wish', wishText);
+        formData.append('time', new Date().toLocaleString());
+        navigator.sendBeacon(`https://formsubmit.co/ajax/${formToken}`, formData);
+      }
     } catch(e) {}
 
+    // Celebratory fireworks, cutie emoji burst & confetti
     launchFirework(width / 2, height / 3);
-    confetti({ particleCount: 100, spread: 90, origin: { y: 0.4 } });
+    spawnExtraCuties(12);
+    confetti({ particleCount: 120, spread: 100, origin: { y: 0.4 } });
 
     wishInput.value = '';
   }
 });
 
+// Cutie Emojis Header Button
+const cutiesBtn = document.getElementById('spawn-cuties-btn');
+if (cutiesBtn) {
+  cutiesBtn.addEventListener('click', () => {
+    spawnExtraCuties(25);
+  });
+}
+
 document.getElementById('restart-tour-btn').addEventListener('click', () => switchStage(1));
 document.getElementById('music-toggle').addEventListener('click', toggleBackgroundMusic);
+
+// Secret shortcut key: Press Ctrl + Shift + W to view secret wishes on device
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'w') {
+    const wishes = JSON.parse(localStorage.getItem('vennela_wishes') || '[]');
+    if (wishes.length === 0) {
+      alert("💌 No secret wishes submitted yet!");
+    } else {
+      const formatted = wishes.map((w, i) => `${i + 1}. [${w.timestamp}] "${w.wish}"`).join('\n\n');
+      alert(`💌 VENNELA'S SECRET WISHES:\n\n${formatted}`);
+    }
+  }
+});
