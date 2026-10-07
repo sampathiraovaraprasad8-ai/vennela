@@ -938,9 +938,10 @@ if (moonLogo) {
   });
 }
 
-// 2. Secret Trigger: Hotkey Ctrl + Shift + W
+// 2. Secret Trigger: Hotkey Ctrl + Shift + V (V for Vault)
 window.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'w') {
+  if (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'v' || e.key.toLowerCase() === 's')) {
+    e.preventDefault();
     openWishesVault();
   }
 });
