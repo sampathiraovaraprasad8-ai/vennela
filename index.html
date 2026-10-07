@@ -337,7 +337,7 @@
 
     </main>
 
-    <!-- FULLSCREEN PHOTO LIGHTBOX MODAL (ENHANCED FOR DESKTOP & MOBILE SCROLLING) -->
+    <!-- FULLSCREEN PHOTO LIGHTBOX MODAL -->
     <div class="modal-overlay hidden" id="photo-lightbox">
       <div class="glass-card lightbox-card">
         <button class="close-modal-btn" id="close-lightbox">✖</button>
@@ -345,6 +345,24 @@
           <img id="lightbox-img" src="" alt="Vennela Full Photo" class="lightbox-img" />
         </div>
         <p id="lightbox-caption" class="lightbox-caption"></p>
+      </div>
+    </div>
+
+    <!-- SECRET WISHES VAULT MODAL (FOR BEST FRIEND) -->
+    <div class="modal-overlay hidden" id="wishes-vault-modal">
+      <div class="glass-card vault-card">
+        <button class="close-modal-btn" id="close-vault-modal">✖</button>
+        <div class="badge-pill">🔒 Secret Wishes Vault</div>
+        <h2>💌 Vennela's Secret Birthday Wishes</h2>
+        <p class="subtitle">Here are all the birthday wishes Vennela has released into the stars!</p>
+        
+        <div class="vault-wishes-list" id="vault-wishes-list">
+          <!-- Injected by JS -->
+        </div>
+
+        <div class="vault-actions">
+          <button class="secondary-btn" id="copy-wishes-btn">📋 Copy Wishes</button>
+        </div>
       </div>
     </div>
 

@@ -887,15 +887,84 @@ if (cutiesBtn) {
 document.getElementById('restart-tour-btn').addEventListener('click', () => switchStage(1));
 document.getElementById('music-toggle').addEventListener('click', toggleBackgroundMusic);
 
-// Secret shortcut key: Press Ctrl + Shift + W to view secret wishes on device
+/* -------------------------------------------------------------
+   SECRET WISHES VAULT (FOR BEST FRIEND ONLY)
+   ------------------------------------------------------------- */
+function openWishesVault() {
+  playSoundEffect('unlock');
+  const vaultModal = document.getElementById('wishes-vault-modal');
+  const wishesList = document.getElementById('vault-wishes-list');
+  const wishes = JSON.parse(localStorage.getItem('vennela_wishes') || '[]');
+
+  if (wishes.length === 0) {
+    wishesList.innerHTML = `
+      <div class="empty-vault">
+        <span style="font-size: 2.5rem; display: block; margin-bottom: 8px;">✨</span>
+        <p>No secret wishes released yet! When Vennela types a wish and releases it, it will appear right here.</p>
+      </div>
+    `;
+  } else {
+    wishesList.innerHTML = wishes.map((item, idx) => `
+      <div class="vault-wish-item">
+        <div class="wish-item-header">
+          <span class="wish-num">Wish #${idx + 1}</span>
+          <span class="wish-time">🕒 ${item.timestamp}</span>
+        </div>
+        <p class="wish-item-text">"${item.wish}"</p>
+      </div>
+    `).join('');
+  }
+
+  vaultModal.classList.remove('hidden');
+}
+
+// 1. Secret Trigger: Triple-tap Moon Logo 🌙
+let moonTapCount = 0;
+let moonTapTimer = null;
+const moonLogo = document.querySelector('.logo-tag');
+
+if (moonLogo) {
+  moonLogo.style.cursor = 'pointer';
+  moonLogo.addEventListener('click', () => {
+    moonTapCount++;
+    clearTimeout(moonTapTimer);
+
+    if (moonTapCount >= 3) {
+      moonTapCount = 0;
+      openWishesVault();
+    } else {
+      moonTapTimer = setTimeout(() => { moonTapCount = 0; }, 1200);
+    }
+  });
+}
+
+// 2. Secret Trigger: Hotkey Ctrl + Shift + W
 window.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'w') {
-    const wishes = JSON.parse(localStorage.getItem('vennela_wishes') || '[]');
-    if (wishes.length === 0) {
-      alert("💌 No secret wishes submitted yet!");
-    } else {
-      const formatted = wishes.map((w, i) => `${i + 1}. [${w.timestamp}] "${w.wish}"`).join('\n\n');
-      alert(`💌 VENNELA'S SECRET WISHES:\n\n${formatted}`);
-    }
+    openWishesVault();
   }
+});
+
+// Close Modal
+document.getElementById('close-vault-modal')?.addEventListener('click', () => {
+  document.getElementById('wishes-vault-modal')?.classList.add('hidden');
+});
+
+const vaultModalEl = document.getElementById('wishes-vault-modal');
+if (vaultModalEl) {
+  vaultModalEl.addEventListener('click', (e) => {
+    if (e.target === vaultModalEl) {
+      vaultModalEl.classList.add('hidden');
+    }
+  });
+}
+
+// Copy Wishes Button
+document.getElementById('copy-wishes-btn')?.addEventListener('click', () => {
+  const wishes = JSON.parse(localStorage.getItem('vennela_wishes') || '[]');
+  if (wishes.length === 0) return;
+  const text = wishes.map((w, i) => `${i + 1}. [${w.timestamp}] "${w.wish}"`).join('\n\n');
+  navigator.clipboard.writeText(text);
+  playSoundEffect('pop');
+  alert("📋 Copied all wishes to clipboard!");
 });
