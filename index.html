@@ -12,8 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script type="module" crossorigin src="./assets/index-DjVr4C_3.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-afs4-l1j.css">
+    <script type="module" crossorigin src="./assets/index-Cz3rB9Uy.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DxR4W0gj.css">
   </head>
   <body>
     <!-- Background Canvas for Stardust, Sparks, Moon Glow & Fireworks -->
@@ -339,7 +339,7 @@
 
     </main>
 
-    <!-- FULLSCREEN PHOTO LIGHTBOX MODAL (ENHANCED FOR DESKTOP & MOBILE SCROLLING) -->
+    <!-- FULLSCREEN PHOTO LIGHTBOX MODAL -->
     <div class="modal-overlay hidden" id="photo-lightbox">
       <div class="glass-card lightbox-card">
         <button class="close-modal-btn" id="close-lightbox">✖</button>
@@ -347,6 +347,24 @@
           <img id="lightbox-img" src="" alt="Vennela Full Photo" class="lightbox-img" />
         </div>
         <p id="lightbox-caption" class="lightbox-caption"></p>
+      </div>
+    </div>
+
+    <!-- SECRET WISHES VAULT MODAL (FOR BEST FRIEND) -->
+    <div class="modal-overlay hidden" id="wishes-vault-modal">
+      <div class="glass-card vault-card">
+        <button class="close-modal-btn" id="close-vault-modal">✖</button>
+        <div class="badge-pill">🔒 Secret Wishes Vault</div>
+        <h2>💌 Vennela's Secret Birthday Wishes</h2>
+        <p class="subtitle">Here are all the birthday wishes Vennela has released into the stars!</p>
+        
+        <div class="vault-wishes-list" id="vault-wishes-list">
+          <!-- Injected by JS -->
+        </div>
+
+        <div class="vault-actions">
+          <button class="secondary-btn" id="copy-wishes-btn">📋 Copy Wishes</button>
+        </div>
       </div>
     </div>
 
